@@ -22,11 +22,11 @@ This is a three step process:
 - The SSD cannot be mounted when preparing
 
 ## Included Scripts
-### 1. `copy_partitions.sh`
+### 1. `make_partitions.sh`
 This script copies the partition structure from the SD card to the SSD.
 
-### 2. `clone_partitions.sh`
-This script clones the data from the SD card partitions to the corresponding SSD partitions.
+### 2. `copy_partitions.sh`
+This script copies the data from the SD card partitions to the corresponding SSD partitions.
 
 ### 3. `configure_ssd_boot.sh`
 This script modifies system configuration files on the SSD to enable the Jetson Developer Kit to boot from the SSD. It updates:
@@ -34,15 +34,15 @@ This script modifies system configuration files on the SSD to enable the Jetson 
 - `/etc/fstab` to match the SSD's UUID for system mounts.
 
 ## Usage
-### Step 1: Copy Partition Structure
-Run `copy_partitions.sh` to copy the partition structure:
+### Step 1: CopyMake Partition Structure
+Run `make_partitions.sh` to copy the partition structure:
 ```bash
-sudo bash copy_partitions.sh
+sudo bash make_partitions.sh
 ```
-### Step 2: Clone Partition Data
-Run `clone_partitions.sh` to clone the data:
+### Step 2: Copy Partition Data
+Run `copy_partitions.sh` to clone the data:
 ```bash
-sudo  bash clone_partitions.sh 
+sudo  bash copy_partitions.sh 
 ```
 ### Step 3: Configure SSD Boot
 Run `configure_ssd_boot.sh` to modify the system configuration:
