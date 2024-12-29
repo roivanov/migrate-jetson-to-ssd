@@ -17,7 +17,7 @@ This is a three step process:
 - A NVIDIA Jetson Developer Kit with SSD capabilities. It's only been tested on JetPack 6 machines.
 - A running system on an SD card.
 - An SSD with a larger capacity than the SD card.
-- Unformatted SSDs with no file system appear to work best
+- Unformatted SSDs with no partitions appear to work best
 - Root privileges to execute the scripts.
 - The SSD cannot be mounted when preparing
 
