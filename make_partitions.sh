@@ -48,19 +48,23 @@ if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
     exit 1
 fi
 
-# Step 1: Backup the GPT partition table from the source disk
+# Backup the GPT partition table from the source disk
 echo "Backing up partition table from $SOURCE..."
 sgdisk --backup=table.bak "$SOURCE" || { echo "Failed to backup partition table from $SOURCE."; exit 1; }
 
-# Step 2: Restore the partition table to the destination disk
+# Restore the partition table to the destination disk
 echo "Restoring partition table to $DESTINATION..."
 sgdisk --load-backup=table.bak "$DESTINATION" || { echo "Failed to restore partition table to $DESTINATION."; exit 1; }
 
-# Step 3: Inform the OS about the partition table changes
+# Modify PARTUUIDs on destination disk
+echo "Randomizing GUIDs for $DESTINATION..."
+sgdisk --randomize-guids "$DESTINATION" || { echo "Failed to randomize GUIDs on $DESTINATION."; exit 1; }
+
+# Inform the OS about the partition table changes
 echo "Reloading partition table on $DESTINATION..."
 partprobe "$DESTINATION" || { echo "Failed to reload partition table on $DESTINATION."; exit 1; }
 
-# Step 4: Replicate file systems from source to destination
+# Replicate file systems from source to destination
 echo "Replicating file systems..."
 # for PART in $(ls "${DESTINATION}"* | grep -E "${DESTINATION}p?[0-9]+$"); do
 for PART in $(lsblk -ln -o NAME -p "$DESTINATION" | grep -E "${DESTINATION}p?[0-9]+$"); do
@@ -102,7 +106,7 @@ for PART in $(lsblk -ln -o NAME -p "$DESTINATION" | grep -E "${DESTINATION}p?[0-
     fi
 done
 
-# Step 5: Adjust filesystem UUIDs
+# Adjust filesystem UUIDs
 echo "Adjusting filesystem UUIDs..."
 for PART in $(ls "${DESTINATION}"* | grep -E "${DESTINATION}p?[0-9]+$"); do
     FSTYPE=$(blkid -o value -s TYPE "$PART")
