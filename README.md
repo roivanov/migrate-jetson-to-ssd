@@ -47,7 +47,7 @@ sudo  bash copy_partitions.sh
 ### Step 3: Configure SSD Boot
 Run `configure_ssd_boot.sh` to modify the system configuration:
 ```bash
-sudo ./configure_ssd_boot.sh 
+sudo bash configure_ssd_boot.sh 
 ```
 
 ## Notes
