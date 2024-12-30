@@ -66,7 +66,6 @@ partprobe "$DESTINATION" || { echo "Failed to reload partition table on $DESTINA
 
 # Replicate file systems from source to destination
 echo "Replicating file systems..."
-# for PART in $(ls "${DESTINATION}"* | grep -E "${DESTINATION}p?[0-9]+$"); do
 for PART in $(lsblk -ln -o NAME -p "$DESTINATION" | grep -E "${DESTINATION}p?[0-9]+$"); do
     # Get the corresponding source partition
     PART_NUM=$(echo "$PART" | grep -oE '[0-9]+$')
