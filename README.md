@@ -5,7 +5,8 @@ Once you set up a Jetson Orin Nano or NX to run from an SD card, you may want th
 
 **Note** I've only tried this with one brand of SD card, and a SSD with the same sector size.
 The scripts assume your SD card is located at /dev/mmcblk0 and your SSD is /dev/nvme0n1. Command line flags allow you to change that (-h for help).
-I'm using the 2280 slot for the SSD. my understanding is that the 2230 slot is /dev/nvme0n2, but is something you will need to check.
+The Jetson Orin Nano has two M.2 Key M slots, one is for a 80cm card (2280), one is for a 30cm card (2230). The other M.2 slot is for a wireless NIC.
+I'm using the 2280 slot for the SSD. The 2230 slot is also on /dev/nvme0n1 if you are not using the 2280 slot.
 
 ## Features
 This is a three step process:
