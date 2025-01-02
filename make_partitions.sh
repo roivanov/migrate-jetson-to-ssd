@@ -48,6 +48,10 @@ if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
     exit 1
 fi
 
+# The GPT tables exist on the start and end of the drive. Make sure to erase all of the tables
+echo "Clearing all partition and filesystem metadata from $DESTINATION..."
+sgdisk --zap-all "$DESTINATION" || { echo "Failed to zap $DESTINATION."; exit 1; }
+
 # Backup the GPT partition table from the source disk
 echo "Backing up partition table from $SOURCE..."
 sgdisk --backup=table.bak "$SOURCE" || { echo "Failed to backup partition table from $SOURCE."; exit 1; }
