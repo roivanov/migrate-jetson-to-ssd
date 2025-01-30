@@ -1,9 +1,9 @@
 # migrate-jetson-to-ssd
 
-# WIP
 Once you set up a Jetson Orin Nano or NX to run from an SD card, you may want the option to migrate to an SSD for better performance and storage capacity. While serious developers use an attached PC with SDK Manager and command-line tools to configure their devices and modify them, casual users or those in a pinch might prefer a simpler approach. This toolkit enables you to copy the contents of the SD card to the SSD directly from the Jetson itself, allowing the SSD to serve as the boot medium.
 
-**Note** I've only tried this with one brand of SD card, and a SSD with the same sector size.
+**Notes (Updated Jan 30, 2025)** I've only tried this with SD cards and SSDs with the same sector size. There have been a couple reports of people experiencing issues. The common factor seems to be that they are using 32GB SD cards. I will be testing this, but be advised that the NVIDIA recommeneded minimum size for the Orin Nano is a SD card of 64GB.
+
 The scripts assume your SD card is located at /dev/mmcblk0 and your SSD is /dev/nvme0n1. Command line flags allow you to change that (-h for help).
 The Jetson Orin Nano has two M.2 Key M slots, one is for a 80mm card (2280), one is for a 30mm card (2230). The other M.2 slot is for a wireless NIC.
 I'm using the 2280 slot for the SSD. The 2230 slot is also on /dev/nvme0n1 if you are not using the 2280 slot.
