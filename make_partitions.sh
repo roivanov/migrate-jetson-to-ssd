@@ -64,16 +64,18 @@ sgdisk --load-backup=table.bak "$DESTINATION" || { echo "Failed to restore parti
 echo "Randomizing GUIDs for $DESTINATION..."
 sgdisk --randomize-guids "$DESTINATION" || { echo "Failed to randomize GUIDs on $DESTINATION."; exit 1; }
 
+echo "Flushing disk writes..."
+sync
+
 # Inform the OS about the partition table changes
 echo "Reloading partition table on $DESTINATION..."
-partprobe --sync "$DESTINATION" || {
+partprobe "$DESTINATION" || {
     echo "partprobe failed, forcing partition table reread..."
     blockdev --rereadpt "$DESTINATION" || { echo "Failed to reread partition table."; exit 1; }
 }
 
 # Ensure system is aware of changes
 udevadm settle
-
 
 # Replicate file systems from source to destination
 echo "Replicating file systems..."
