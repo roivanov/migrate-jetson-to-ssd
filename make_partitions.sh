@@ -168,7 +168,21 @@ for PART in $(lsblk -ln -o NAME -p "$DESTINATION" | grep -E "${DESTINATION}p?[0-
                 else
                     echo "Source FAT32 partition $SOURCE_PART has no label. Skipping label assignment."
                 fi
+                # Get the source partition label (PARTLABEL)
+                SRC_PARTLABEL=$(blkid -o value -s PARTLABEL "$SOURCE_PART")
+                echo "Source PARTLABEL for $SOURCE_PART: ${SRC_PARTLABEL:-<none>}"
+
+                if [[ -n "$SRC_PARTLABEL" ]]; then
+                    echo "Setting PARTLABEL: $SRC_PARTLABEL on $PART..."
+                    sgdisk --change-name="${PART_NUM}:${SRC_PARTLABEL}" "$DESTINATION" && echo "Updated PARTLABEL for $PART to $SRC_PARTLABEL."
+                else
+                    echo "Source partition $SOURCE_PART has no PARTLABEL. Skipping PARTLABEL update."
+                fi
+
+                # Ensure partition table changes are recognized
                 sync
+                partprobe "$DESTINATION"
+                udevadm settle
                 ;;
             *)
                 echo "Filesystem type $FSTYPE on $PART not supported for UUID adjustment."
