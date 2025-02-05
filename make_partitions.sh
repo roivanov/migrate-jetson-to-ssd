@@ -89,28 +89,31 @@ for PART in $(lsblk -ln -o NAME -p "$DESTINATION" | grep -E "${DESTINATION}p?[0-
     else
         SOURCE_PART="${SOURCE}${PART_NUM}"
     fi
-    echo "Part: $SOURCE_PART"
+
+    # Echo the destination partition being processed
+    echo "Processing destination partition: $PART"
+    echo "Corresponding source partition: $SOURCE_PART"
+
     # Check if the source partition has a file system
     SRC_FSTYPE=$(blkid -o value -s TYPE "$SOURCE_PART")
-    echo "Processing $PART (source: $SOURCE_PART, type: $SRC_FSTYPE)..."
     echo "Source partition: $SOURCE_PART, Detected filesystem: ${SRC_FSTYPE:-None}"
 
     if [[ -n "$SRC_FSTYPE" ]]; then
         case "$SRC_FSTYPE" in
             ext[234])
                 echo "Creating ext4 filesystem on $PART..."
-                mkfs.ext4 -F "$PART" && echo "ext4 filesystem created successfully."
+                mkfs.ext4 -F "$PART" && echo "ext4 filesystem created successfully on $PART."
                 ;;
             vfat|fat32)
                 echo "Creating FAT32 filesystem on $PART..."
-                mkfs.vfat -F 32 "$PART" && echo "FAT32 filesystem created successfully."
+                mkfs.vfat -F 32 "$PART" && echo "FAT32 filesystem created successfully on $PART."
                 ;;
             swap)
                 echo "Creating swap on $PART..."
-                mkswap "$PART" && echo "Swap filesystem created successfully."
+                mkswap "$PART" && echo "Swap filesystem created successfully on $PART."
                 ;;
             *)
-                echo "Unsupported filesystem $SRC_FSTYPE on $SOURCE_PART. Skipping..."
+                echo "Unsupported filesystem $SRC_FSTYPE on $SOURCE_PART. Skipping $PART..."
                 ;;
         esac
     else
