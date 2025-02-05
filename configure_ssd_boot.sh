@@ -135,7 +135,7 @@ sed "/\\/boot\\/efi / s|UUID=[^ ]*|UUID=${EFI_UUID}|" "$FSTAB" > "${FSTAB}.tmp" 
 }
 
 echo "Updated $FSTAB with EFI UUID=${EFI_UUID}"
-
+sync
 # Unmount the root partition and clean up
 if mountpoint -q "$MOUNT_POINT"; then
   umount "$MOUNT_POINT"
