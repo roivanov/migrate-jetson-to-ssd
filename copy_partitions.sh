@@ -100,6 +100,7 @@ for SOURCE_PART in $SOURCE_PARTS; do
             echo "Error: Failed to copy raw data from $SOURCE_PART to $DEST_PART."
             continue
         }
+        sync
         echo "Raw copy from $SOURCE_PART to $DEST_PART completed."
         continue
     fi
@@ -150,16 +151,19 @@ for SOURCE_PART in $SOURCE_PARTS; do
             "$SRC_MOUNT/" "$DEST_MOUNT/" || {
             echo "Error: Failed to sync root filesystem directories from $SOURCE_PART to $DEST_PART."
         }
+        sync
     elif [[ "$SRC_MOUNT" == "/boot" ]]; then
         echo "Detected boot partition. Copying all boot files."
         rsync -aAXv --progress "$SRC_MOUNT/" "$DEST_MOUNT/" || {
             echo "Error: Failed to sync boot partition from $SOURCE_PART to $DEST_PART."
         }
+        sync
     else
         # General rsync for non-root partitions
         rsync -aAXv --progress "$SRC_MOUNT/" "$DEST_MOUNT/" || {
             echo "Error: Failed to sync $SOURCE_PART to $DEST_PART."
         }
+        sync
     fi
 
     # Unmount destination and source (only if the source was mounted by the script)
@@ -171,5 +175,11 @@ for SOURCE_PART in $SOURCE_PARTS; do
     fi
 
 done
+
+echo "Flushing disk caches..."
+sync
+blockdev --flushbufs "$DESTINATION"
+udevadm settle
+
 
 echo "Partition content copy complete."
