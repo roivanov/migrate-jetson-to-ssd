@@ -121,37 +121,54 @@ for PART in $(lsblk -ln -o NAME -p "$DESTINATION" | grep -E "${DESTINATION}p?[0-
     fi
 done
 
+# Ensure all filesystem changes are committed
+echo "Flushing all writes before UUID adjustments..."
+sync
+
+
 # Adjust filesystem UUIDs
 echo "Adjusting filesystem UUIDs..."
-for PART in $(ls "${DESTINATION}"* | grep -E "${DESTINATION}p?[0-9]+$"); do
+for PART in $(lsblk -ln -o NAME -p "$DESTINATION" | grep -E "${DESTINATION}p?[0-9]+$"); do
     FSTYPE=$(blkid -o value -s TYPE "$PART")
-    echo "Processing $PART (type: $FSTYPE)..."
-    
+    PART_NUM=$(echo "$PART" | grep -oE '[0-9]+$')
+
+    # Determine corresponding source partition
+    if [[ "$SOURCE" == *"mmcblk"* || "$SOURCE" == *"nvme"* ]]; then
+        SOURCE_PART="${SOURCE}p${PART_NUM}"
+    else
+        SOURCE_PART="${SOURCE}${PART_NUM}"
+    fi
+
+    echo "Processing destination partition: $PART (type: $FSTYPE)"
+    echo "Corresponding source partition: $SOURCE_PART"
+
     if [[ -n "$FSTYPE" ]]; then
         case "$FSTYPE" in
             ext[234])
                 echo "Checking filesystem on $PART..."
                 e2fsck -f "$PART" && tune2fs -U random "$PART" && echo "Updated UUID for $PART."
+                sync
                 ;;
             swap)
                 mkswap -U "$(uuidgen)" "$PART" && echo "Updated UUID for $PART."
+                sync
                 ;;
             vfat|fat32)
-                # Get the source partition label
+                # Fetch the source FAT32 label correctly now
                 SRC_LABEL=$(blkid -o value -s LABEL "$SOURCE_PART")
                 echo "Source FAT32 label for $SOURCE_PART: ${SRC_LABEL:-<none>}"
 
                 if [[ -n "$SRC_LABEL" ]]; then
-                    # Apply the source label to the destination partition
                     echo "Setting FAT32 label: $SRC_LABEL on $PART..."
                     if ! fatlabel "$PART" "$SRC_LABEL"; then
-                        echo "Error: FAT32 label '$SRC_LABEL' failed to set on $PART. Labels can be no longer than 11 characters."
+                        echo "Error: FAT32 label '$SRC_LABEL' failed to set on $PART."
                     else
                         echo "Updated label and UUID for $PART with label: $SRC_LABEL."
                     fi
                 else
-                    echo "Source FAT32 partition $SOURCE_PART has no label. Skipping label assignment for $PART."
+                    echo "Source FAT32 partition $SOURCE_PART has no label. Skipping label assignment."
                 fi
+                sync
                 ;;
             *)
                 echo "Filesystem type $FSTYPE on $PART not supported for UUID adjustment."
@@ -161,6 +178,12 @@ for PART in $(ls "${DESTINATION}"* | grep -E "${DESTINATION}p?[0-9]+$"); do
         echo "Skipping $PART: No filesystem detected."
     fi
 done
+
+# Ensure UUID changes are properly recognized
+echo "Forcing partition table reread after UUID updates..."
+blockdev --rereadpt "$DESTINATION" || echo "Warning: Could not reread partition table."
+udevadm settle
+sync  # Final sync to make sure everything is written
 
 # Clean up
 rm -f table.bak
