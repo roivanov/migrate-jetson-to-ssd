@@ -66,7 +66,14 @@ sgdisk --randomize-guids "$DESTINATION" || { echo "Failed to randomize GUIDs on 
 
 # Inform the OS about the partition table changes
 echo "Reloading partition table on $DESTINATION..."
-partprobe "$DESTINATION" || { echo "Failed to reload partition table on $DESTINATION."; exit 1; }
+partprobe --sync "$DESTINATION" || {
+    echo "partprobe failed, forcing partition table reread..."
+    blockdev --rereadpt "$DESTINATION" || { echo "Failed to reread partition table."; exit 1; }
+}
+
+# Ensure system is aware of changes
+udevadm settle
+
 
 # Replicate file systems from source to destination
 echo "Replicating file systems..."
